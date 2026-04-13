@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Have Your Say - Ruleta</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #c90d0d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .frame {
+      width: min(1400px, 96vw);
+      aspect-ratio: 16 / 9;
+      background-image: url('https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=1600&q=80');
+      background-size: cover;
+      background-position: center;
+      border: 24px solid #c90d0d;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.12);
+    }
+
+    .banner {
+      position: absolute;
+      top: 6%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 62%;
+      min-height: 140px;
+      background: rgba(255,255,255,0.94);
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 3;
+      border-radius: 2px;
+    }
+
+    .banner img {
+      max-width: 100%;
+      max-height: 150px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .logo-box {
+      position: absolute;
+      top: 7%;
+      right: 4%;
+      width: 8.5%;
+      min-width: 80px;
+      aspect-ratio: 1 / 1.25;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      z-index: 3;
+      overflow: hidden;
+    }
+
+    .logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .slots {
+      position: absolute;
+      left: 50%;
+      top: 58%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(90px, 1fr));
+      gap: 28px;
+      width: min(650px, 62%);
+      z-index: 2;
+    }
+
+    .slot {
+      background: rgba(255,255,255,0.94);
+      aspect-ratio: 1 / 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: clamp(42px, 5vw, 88px);
+      border-radius: 2px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.16);
+      user-select: none;
+    }
+
+    .buttons {
+      position: absolute;
+      left: 50%;
+      bottom: 8%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 2;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      border: none;
+      background: #ff1f1f;
+      color: white;
+      font-size: clamp(18px, 1.8vw, 34px);
+      padding: 16px 28px;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+    }
+
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px); }
+
+    button:disabled {
+      opacity: 0.75;
+      cursor: not-allowed;
+    }
+
+    .license {
+      position: absolute;
+      right: 3.5%;
+      bottom: 5.5%;
+      background: white;
+      border: 2px solid #111;
+      padding: 6px 10px;
+      font-size: clamp(12px, 1vw, 18px);
+      font-weight: 700;
+      letter-spacing: 1px;
+      z-index: 2;
+    }
+
+    .topic {
+      position: absolute;
+      left: 50%;
+      bottom: 7%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.94);
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: clamp(14px, 1.2vw, 22px);
+      min-width: 280px;
+      text-align: center;
+      z-index: 2;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.14);
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .slots {
+        gap: 12px;
+        width: 78%;
+      }
+
+      .buttons {
+        bottom: 14%;
+      }
+
+      .banner {
+        width: 72%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="overlay"></div>
+
+    <div class="banner">
+      <img id="headerImage" alt="Encabezado" />
+    </div>
+
+    <div class="logo-box">
+      <img id="logoImage" alt="Logo" />
+    </div>
+
+    <div class="slots" id="slots">
+      <div class="slot" id="slot0">🏠</div>
+      <div class="slot" id="slot1">⛰️</div>
+      <div class="slot" id="slot2">🦁</div>
+      <div class="slot" id="slot3">🧙</div>
+    </div>
+
+    <div class="buttons">
+      <button id="rollBtn">Roll the Dice</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+
+    <div class="topic" id="topicBox"></div>
+
+    <div class="license">CC BY NC ND</div>
+  </div>
+
+  <script>
+  const HEADER_IMAGE = 'encabezado.jpg';
+  const LOGO_IMAGE = 'logo.png';
+
+    document.getElementById('headerImage').src = HEADER_IMAGE;
+    document.getElementById('logoImage').src = LOGO_IMAGE;
+
+    const columns = [
+      [
+        { icon: '🏠', label: 'house' },
+        { icon: '🏫', label: 'school' },
+        { icon: '🏖️', label: 'beach' },
+        { icon: '🌋', label: 'volcano' },
+        { icon: '🌳', label: 'forest' },
+        { icon: '🏰', label: 'castle' }
+      ],
+      [
+        { icon: '☀️', label: 'sunny day' },
+        { icon: '🌧️', label: 'rainy day' },
+        { icon: '❄️', label: 'snowy day' },
+        { icon: '🌈', label: 'rainbow' },
+        { icon: '⛰️', label: 'mountains' },
+        { icon: '🌊', label: 'sea' }
+      ],
+      [
+        { icon: '🦁', label: 'lion' },
+        { icon: '🐵', label: 'monkey' },
+        { icon: '🐬', label: 'dolphin' },
+        { icon: '🐘', label: 'elephant' },
+        { icon: '🦉', label: 'owl' },
+        { icon: '🐢', label: 'turtle' }
+      ],
+      [
+        { icon: '🧙', label: 'wizard' },
+        { icon: '👨‍🚒', label: 'firefighter' },
+        { icon: '👩‍🏫', label: 'teacher' },
+        { icon: '🧑‍🚀', label: 'astronaut' },
+        { icon: '🧑‍🍳', label: 'chef' },
+        { icon: '🕵️', label: 'detective' }
+      ]
+    ];
+
+    const slots = [
+      document.getElementById('slot0'),
+      document.getElementById('slot1'),
+      document.getElementById('slot2'),
+      document.getElementById('slot3')
+    ];
+
+    const rollBtn = document.getElementById('rollBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const topicBox = document.getElementById('topicBox');
+
+    let spinning = false;
+    let timeouts = [];
+    const initialState = ['🏠', '⛰️', '🦁', '🧙'];
+
+    function clearAllTimers() {
+      timeouts.forEach(id => clearTimeout(id));
+      timeouts = [];
+    }
+
+    function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function setSlots(items) {
+      items.forEach((item, i) => {
+        slots[i].textContent = item;
+      });
+    }
+
+    function resetBoard() {
+      clearAllTimers();
+      spinning = false;
+      rollBtn.disabled = false;
+      setSlots(initialState);
+      topicBox.textContent = '';
+      topicBox.style.display = 'none';
+    }
+
+    function roll() {
+      if (spinning) return;
+
+      spinning = true;
+      rollBtn.disabled = true;
+      topicBox.textContent = '';
+      topicBox.style.display = 'none';
+
+      const finalSelection = columns.map(col => randomItem(col));
+      const durations = [1100, 1450, 1800, 2150];
+
+      columns.forEach((col, colIndex) => {
+        const slot = slots[colIndex];
+        let elapsed = 0;
+        let delay = 70;
+
+        function spinStep() {
+          if (elapsed < durations[colIndex]) {
+            slot.textContent = randomItem(col).icon;
+            elapsed += delay;
+            delay = Math.min(delay + 12, 180);
+            const t = setTimeout(spinStep, delay);
+            timeouts.push(t);
+          } else {
+            slot.textContent = finalSelection[colIndex].icon;
+
+            if (colIndex === columns.length - 1) {
+              topicBox.style.display = 'block';
+              topicBox.textContent = finalSelection.map(x => x.label).join(' · ');
+              spinning = false;
+              rollBtn.disabled = false;
+            }
+          }
+        }
+
+        const starter = setTimeout(spinStep, colIndex * 120);
+        timeouts.push(starter);
+      });
+    }
+
+    rollBtn.addEventListener('click', roll);
+    resetBtn.addEventListener('click', resetBoard);
+  </script>
+</body>
+</html>
